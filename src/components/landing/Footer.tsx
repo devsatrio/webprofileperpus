@@ -1,14 +1,23 @@
+"use client";
+
 import Link from "next/link";
+import { useAppSetting } from "@/context/AppSettingContext";
 
 export default function Footer() {
+  const { setting } = useAppSetting();
+  
+  const brandName = setting?.singkatan_program || setting?.nama_program || "WebProfile";
+  const description = setting?.deskripsi || "Solusi digital terbaik untuk bisnis Anda";
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="bg-gray-900 text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold text-brand-400 mb-4">WebProfile</h3>
+            <h3 className="text-xl font-bold text-brand-400 mb-4">{brandName}</h3>
             <p className="text-gray-400 text-sm">
-              Solusi digital terbaik untuk bisnis Anda
+              {description}
             </p>
           </div>
           <div>
@@ -83,7 +92,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>© 2026 WebProfile. All rights reserved.</p>
+          <p>© {currentYear} {brandName}. All rights reserved.</p>
         </div>
       </div>
     </footer>

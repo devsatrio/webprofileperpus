@@ -4,41 +4,12 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LandingLayout } from "@/components/landing";
+import { galeriService, Galeri } from "@/services/galeri";
+import { sliderService, Slider } from "@/services/slider";
 
-// Data untuk slider
-const slides = [
-  {
-    id: 1,
-    title: "Selamat Datang",
-    subtitle: "Di Website Kami",
-    description: "Kami menyediakan solusi terbaik untuk kebutuhan digital Anda",
-    image: "/images/carousel/carousel-01.png",
-  },
-  {
-    id: 2,
-    title: "Inovasi Tanpa Batas",
-    subtitle: "Teknologi Modern",
-    description: "Menghadirkan teknologi terkini untuk bisnis Anda",
-    image: "/images/carousel/carousel-02.png",
-  },
-  {
-    id: 3,
-    title: "Bersama Menuju Sukses",
-    subtitle: "Partner Terpercaya",
-    description: "Mitra terbaik untuk pertumbuhan bisnis Anda",
-    image: "/images/carousel/carousel-03.png",
-  },
-];
+// Data slider akan diambil dari database
 
-// Data galeri
-const galleries = [
-  { id: 1, image: "/images/grid-image/image-01.png", title: "Project 1" },
-  { id: 2, image: "/images/grid-image/image-02.png", title: "Project 2" },
-  { id: 3, image: "/images/grid-image/image-03.png", title: "Project 3" },
-  { id: 4, image: "/images/grid-image/image-04.png", title: "Project 4" },
-  { id: 5, image: "/images/grid-image/image-05.png", title: "Project 5" },
-  { id: 6, image: "/images/grid-image/image-06.png", title: "Project 6" },
-];
+// Data galeri akan diambil dari database
 
 // Data artikel
 const articles = [
@@ -95,14 +66,51 @@ const teams = [
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [slides, setSlides] = useState<Slider[]>([]);
+  const [loadingSlider, setLoadingSlider] = useState(true);
+  const [galleries, setGalleries] = useState<Galeri[]>([]);
+  const [selectedImage, setSelectedImage] = useState<Galeri | null>(null);
+  const [loadingGallery, setLoadingGallery] = useState(true);
+
+  // Fetch slider data from Supabase
+  useEffect(() => {
+    const fetchSliders = async () => {
+      try {
+        const data = await sliderService.getActive();
+        setSlides(data);
+      } catch (err) {
+        console.error("Error fetching sliders:", err);
+      } finally {
+        setLoadingSlider(false);
+      }
+    };
+    fetchSliders();
+  }, []);
+
+  // Fetch gallery data from Supabase
+  useEffect(() => {
+    const fetchGalleries = async () => {
+      try {
+        // Ambil 6 galeri terbaru yang aktif
+        const data = await galeriService.getLatest(6);
+        setGalleries(data);
+      } catch (err) {
+        console.error("Error fetching galleries:", err);
+      } finally {
+        setLoadingGallery(false);
+      }
+    };
+    fetchGalleries();
+  }, []);
 
   // Auto slide
   useEffect(() => {
+    if (slides.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
@@ -111,68 +119,87 @@ export default function HomePage() {
     <LandingLayout>
       {/* Hero Slider */}
       <section id="home" className="pt-16 relative h-screen overflow-hidden bg-gray-50">
-        <div className="relative h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-700 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent z-10" />
-              <Image
-                src={slide.image}
-                alt={slide.title}
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-              <div className="absolute inset-0 z-20 flex items-center">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                  <div className="max-w-xl text-white">
-                    <p className="text-brand-300 font-medium mb-2">{slide.subtitle}</p>
-                    <h1 className="text-4xl md:text-6xl font-bold mb-4">{slide.title}</h1>
-                    <p className="text-lg text-gray-200 mb-8">{slide.description}</p>
-                    <button className="bg-brand-500 hover:bg-brand-600 text-white px-8 py-3 rounded-lg transition">
-                      Selengkapnya
-                    </button>
+        {loadingSlider ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-brand-500"></div>
+          </div>
+        ) : slides.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">Belum ada slider</p>
+          </div>
+        ) : (
+          <div className="relative h-full">
+            {slides.map((slide, index) => (
+              <div
+                key={slide.id}
+                className={`absolute inset-0 transition-opacity duration-700 ${
+                  index === currentSlide ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent z-10" />
+                <Image
+                  src={slide.image_url}
+                  alt={slide.heading}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                />
+                <div className="absolute inset-0 z-20 flex items-center">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                    <div className="max-w-xl text-white">
+                      <p className="text-brand-300 font-medium mb-2">{slide.sub_heading}</p>
+                      <h1 className="text-4xl md:text-6xl font-bold mb-4">{slide.heading}</h1>
+                      <p className="text-lg text-gray-200 mb-8">{slide.deskripsi}</p>
+                      {slide.link && (
+                        <a 
+                          href={slide.link} 
+                          className="bg-brand-500 hover:bg-brand-600 text-white px-8 py-3 rounded-lg transition inline-block"
+                        >
+                          Selengkapnya
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-
-          {/* Slider Controls */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/40 p-3 rounded-full transition"
-          >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/40 p-3 rounded-full transition"
-          >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Dots */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition ${
-                  index === currentSlide ? "bg-brand-500" : "bg-white/50"
-                }`}
-              />
             ))}
+
+            {/* Slider Controls */}
+            {slides.length > 1 && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/40 p-3 rounded-full transition"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/40 p-3 rounded-full transition"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                {/* Dots */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
+                  {slides.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`w-3 h-3 rounded-full transition ${
+                        index === currentSlide ? "bg-brand-500" : "bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-        </div>
+        )}
       </section>
 
       {/* Gallery Section */}
@@ -185,28 +212,85 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {galleries.map((item) => (
-              <div
-                key={item.id}
-                className="group relative aspect-square overflow-hidden rounded-xl bg-gray-100"
-              >
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-                  <span className="text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                    {item.title}
-                  </span>
+          {loadingGallery ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-brand-500"></div>
+            </div>
+          ) : galleries.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Belum ada galeri</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {galleries.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedImage(item)}
+                  className="group relative aspect-square overflow-hidden rounded-xl bg-gray-100 cursor-pointer"
+                >
+                  <Image
+                    src={item.image_url}
+                    alt={item.keterangan}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                    <svg 
+                      className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+
+          {/* Link to full gallery */}
+          <div className="text-center mt-10">
+            <a href="/galeri" className="border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white px-8 py-3 rounded-lg transition inline-block">
+              Lihat Semua Galeri
+            </a>
           </div>
         </div>
       </section>
+
+      {/* Image Modal/Popup */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative aspect-video">
+              <Image
+                src={selectedImage.image_url}
+                alt={selectedImage.keterangan}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-2">{selectedImage.kategori_galeri?.nama || "Galeri"}</h2>
+              <p className="text-gray-600">{selectedImage.keterangan}</p>
+            </div>
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full transition"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Articles Section */}
       <section id="articles" className="py-20 bg-gray-50">

@@ -1,9 +1,9 @@
 "use client";
 import React, { useEffect, useRef, useState,useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { useAppSetting } from "@/context/AppSettingContext";
 import {
   BoxCubeIcon,
   ChevronDownIcon,
@@ -34,6 +34,11 @@ const navItems: NavItem[] = [
   },
   {
     icon: <BoxCubeIcon />,
+    name: "Galeri",
+    path: "/admin/galeri",
+  },
+  {
+    icon: <BoxCubeIcon />,
     name: "Kategori Artikel",
     path: "/admin/kategori-artikel",
   }
@@ -41,11 +46,11 @@ const navItems: NavItem[] = [
     icon: <BoxCubeIcon />,
     name: "Kategori Galeri",
     path: "/admin/kategori-galeri",
-  }
-  ,{
+  },
+  {
     icon: <BoxCubeIcon />,
-    name: "Sidebar",
-    path: "/admin/sidebar",
+    name: "Web Settings",
+    path: "/admin/web-setting",
   },
   {
     icon: <UserCircleIcon />,
@@ -77,6 +82,7 @@ const othersItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { setting } = useAppSetting();
   const pathname = usePathname();
 
   const renderMenuItems = (
@@ -289,31 +295,15 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link href="/">
+        <Link href="/" className="flex items-center gap-2">
           {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <Image
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <Image
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-            </>
+            <span className="text-xl font-bold text-gray-800 dark:text-white">
+              {setting?.singkatan_program || setting?.nama_program || "WebProfile"}
+            </span>
           ) : (
-            <Image
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
+            <span className="text-xl font-bold text-gray-800 dark:text-white">
+              {setting?.singkatan_program?.charAt(0) || "W"}
+            </span>
           )}
         </Link>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAppSetting } from "@/context/AppSettingContext";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -13,6 +14,9 @@ const navLinks = [
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { setting } = useAppSetting();
+
+  const brandName = setting?.nama_program || "";
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -25,7 +29,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="text-xl font-bold text-brand-500">
-            WebProfile
+            {brandName}
           </Link>
 
           {/* Desktop Menu */}

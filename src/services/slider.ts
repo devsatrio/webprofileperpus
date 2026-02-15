@@ -20,6 +20,17 @@ export const sliderService = {
     return data as Slider[];
   },
 
+  // Get active sliders only
+  async getActive() {
+    const { data, error } = await supabase
+      .from("slider")
+      .select("*")
+      .eq("is_active", true)
+      .order("id", { ascending: true });
+    if (error) throw error;
+    return data as Slider[];
+  },
+
   async getById(id: number) {
     const { data, error } = await supabase
       .from("slider")
