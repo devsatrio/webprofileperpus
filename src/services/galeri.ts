@@ -32,6 +32,14 @@ export const galeriService = {
         return data as GaleriWithKategori[];
     },
 
+    async getCount() {
+        const { count, error } = await supabase
+            .from("galeri")
+            .select("*", { count: "exact", head: true });
+        if (error) throw error;
+        return count || 0;
+    },
+
     // Get latest active galleries with limit
     async getLatest(limit: number = 6) {
         const { data, error } = await supabase

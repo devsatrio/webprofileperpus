@@ -29,8 +29,18 @@ const navItems: NavItem[] = [
   },
   {
     icon: <BoxCubeIcon />,
-    name: "Slider",
-    path: "/admin/slider",
+    name: "Kategori Artikel",
+    path: "/admin/kategori-artikel",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Kategori Galeri",
+    path: "/admin/kategori-galeri",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Artikel",
+    path: "/admin/artikel",
   },
   {
     icon: <BoxCubeIcon />,
@@ -39,33 +49,16 @@ const navItems: NavItem[] = [
   },
   {
     icon: <BoxCubeIcon />,
-    name: "Kategori Artikel",
-    path: "/admin/kategori-artikel",
-  }
-  ,{
-    icon: <BoxCubeIcon />,
-    name: "Kategori Galeri",
-    path: "/admin/kategori-galeri",
+    name: "Slider",
+    path: "/admin/slider",
   },
   {
-    icon: <BoxCubeIcon />,
-    name: "Web Settings",
+    icon: <BoxCubeIcon />,    name: "Visitor",
+    path: "/admin/visitor",
+  },
+  {
+    icon: <BoxCubeIcon />,    name: "Web Settings",
     path: "/admin/web-setting",
-  },
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/admin/profile",
-  },
-  {
-    icon: <ListIcon />,
-    name: "Forms",
-    path: "/admin/form-elements",
-  },
-  {
-    icon: <TableIcon />,
-    name: "Tables",
-    path: "/admin/basic-tables",
   },
 ];
 

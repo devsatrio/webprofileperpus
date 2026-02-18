@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
+import VisitorTracker from "@/components/visitor/VisitorTracker";
 
 // Fetch app setting for metadata
 async function getAppSetting() {
@@ -31,5 +32,10 @@ export default function HomeLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <VisitorTracker />
+      {children}
+    </>
+  );
 }

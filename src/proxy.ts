@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Cek token dari cookies (sesuaikan dengan nama cookie Supabase)
   const token = request.cookies.get('sb-access-token')?.value
 

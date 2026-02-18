@@ -4,9 +4,10 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { loginWithEmail } from "@/services/auth";
 import { useRouter } from "next/navigation";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,17 +15,33 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const router = useRouter();
+
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validasi captcha
+    if (!captchaToken) {
+      setError("Silakan verifikasi bahwa Anda bukan robot");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const result = await loginWithEmail(email, password);
       if (!result.success) {
         setError(result.error || "Login gagal");
+        // Reset captcha setelah gagal
+        recaptchaRef.current?.reset();
+        setCaptchaToken(null);
         setLoading(false);
         return;
       }
@@ -33,6 +50,9 @@ export default function LoginForm() {
       router.push("/admin");
     } catch (err) {
       setError("Terjadi kesalahan saat login");
+      // Reset captcha setelah error
+      recaptchaRef.current?.reset();
+      setCaptchaToken(null);
       setLoading(false);
     }
   };
@@ -106,11 +126,20 @@ export default function LoginForm() {
                   </span>
                 </div>
               </div>
+              {/* Google reCAPTCHA */}
+              <div className="flex justify-center">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                  onChange={handleCaptchaChange}
+                  onExpired={() => setCaptchaToken(null)}
+                />
+              </div>
               <div className="pt-2">
                 <Button
                   className="w-full"
                   size="sm"
-                  disabled={loading}
+                  disabled={loading || !captchaToken}
                 >
                   {loading ? "Loading..." : "Sign in"}
                 </Button>
