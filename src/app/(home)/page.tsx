@@ -6,35 +6,14 @@ import Link from "next/link";
 import { LandingLayout } from "@/components/landing";
 import { galeriService, Galeri } from "@/services/galeri";
 import { sliderService, Slider } from "@/services/slider";
+import { artikelService, Artikel } from "@/services/artikel";
+import { useAppSetting } from "@/context/AppSettingContext";
 
 // Data slider akan diambil dari database
 
 // Data galeri akan diambil dari database
 
-// Data artikel
-const articles = [
-  {
-    id: 1,
-    title: "Tips Membangun Website Modern",
-    excerpt: "Pelajari cara membangun website yang responsif dan user-friendly dengan teknologi terkini.",
-    date: "2 Feb 2026",
-    image: "/images/cards/card-01.png",
-  },
-  {
-    id: 2,
-    title: "Pentingnya UI/UX Design",
-    excerpt: "Mengapa desain yang baik sangat penting untuk kesuksesan produk digital Anda.",
-    date: "1 Feb 2026",
-    image: "/images/cards/card-02.png",
-  },
-  {
-    id: 3,
-    title: "Strategi Digital Marketing",
-    excerpt: "Strategi pemasaran digital yang efektif untuk meningkatkan brand awareness.",
-    date: "30 Jan 2026",
-    image: "/images/cards/card-03.png",
-  },
-];
+// Data artikel akan diambil dari database
 
 // Data team
 const teams = [
@@ -64,6 +43,48 @@ const teams = [
   },
 ];
 
+// Helper function to strip HTML and clean text for excerpt
+const stripHtmlAndClean = (html: string, maxLength: number = 120): string => {
+  if (!html) return "";
+  
+  // Remove HTML tags
+  let text = html.replace(/<[^>]*>/g, " ");
+  
+  // Decode common HTML entities
+  text = text
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&apos;/gi, "'")
+    .replace(/&mdash;/gi, "—")
+    .replace(/&ndash;/gi, "–")
+    .replace(/&hellip;/gi, "...")
+    .replace(/&rsquo;/gi, "'")
+    .replace(/&lsquo;/gi, "'")
+    .replace(/&rdquo;/gi, '"')
+    .replace(/&ldquo;/gi, '"')
+    .replace(/&#\d+;/g, ""); // Remove remaining numeric entities
+  
+  // Clean up whitespace
+  text = text.replace(/\s+/g, " ").trim();
+  
+  // Truncate to maxLength
+  if (text.length > maxLength) {
+    text = text.substring(0, maxLength).trim();
+    // Don't cut in the middle of a word
+    const lastSpace = text.lastIndexOf(" ");
+    if (lastSpace > maxLength - 30) {
+      text = text.substring(0, lastSpace);
+    }
+    text += "...";
+  }
+  
+  return text;
+};
+
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState<Slider[]>([]);
@@ -71,6 +92,11 @@ export default function HomePage() {
   const [galleries, setGalleries] = useState<Galeri[]>([]);
   const [selectedImage, setSelectedImage] = useState<Galeri | null>(null);
   const [loadingGallery, setLoadingGallery] = useState(true);
+  const [articles, setArticles] = useState<Artikel[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(true);
+  
+  // Get app setting from context
+  const { setting } = useAppSetting();
 
   // Fetch slider data from Supabase
   useEffect(() => {
@@ -101,6 +127,22 @@ export default function HomePage() {
       }
     };
     fetchGalleries();
+  }, []);
+
+  // Fetch articles data from Supabase
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        // Ambil 6 artikel terbaru yang aktif
+        const data = await artikelService.getLatest(6);
+        setArticles(data);
+      } catch (err) {
+        console.error("Error fetching articles:", err);
+      } finally {
+        setLoadingArticles(false);
+      }
+    };
+    fetchArticles();
   }, []);
 
   // Auto slide
@@ -302,35 +344,64 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {articles.map((article) => (
-              <article
-                key={article.id}
-                className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition group"
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <Image
-                    src={article.image}
-                    alt={article.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-6">
-                  <p className="text-sm text-brand-500 mb-2">{article.date}</p>
-                  <h3 className="text-lg font-semibold mb-2 group-hover:text-brand-500 transition">
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm">{article.excerpt}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+          {loadingArticles ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-brand-500"></div>
+            </div>
+          ) : articles.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Belum ada artikel</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {articles.map((article) => (
+                <Link
+                  key={article.id}
+                  href={`/artikel/${article.slug || article.id}`}
+                  className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition group block"
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <Image
+                      src={article.image || "/images/cards/card-01.png"}
+                      alt={article.judul}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {article.kategori_artikel && (
+                      <span className="absolute top-3 left-3 bg-brand-500 text-white text-xs px-3 py-1 rounded-full">
+                        {article.kategori_artikel.nama}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <p className="text-sm text-brand-500 mb-2">
+                      {article.created_at
+                        ? new Date(article.created_at).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </p>
+                    <h3 className="text-lg font-semibold mb-2 group-hover:text-brand-500 transition line-clamp-2">
+                      {article.judul}
+                    </h3>
+                    <p className="text-gray-600 text-sm line-clamp-3">
+                      {stripHtmlAndClean(article.isi || "", 120)}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="text-center mt-10">
-            <button className="border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white px-8 py-3 rounded-lg transition">
+            <Link
+              href="/artikel"
+              className="border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white px-8 py-3 rounded-lg transition inline-block"
+            >
               Lihat Semua Artikel
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -398,7 +469,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Alamat</h3>
-                  <p className="text-gray-600">Jl. Contoh No. 123, Jakarta, Indonesia</p>
+                  <p className="text-gray-600">{setting?.alamat || "-"}</p>
                 </div>
               </div>
 
@@ -410,7 +481,13 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Email</h3>
-                  <p className="text-gray-600">info@webprofile.com</p>
+                  <p className="text-gray-600">
+                    {setting?.email ? (
+                      <a href={`mailto:${setting.email}`} className="hover:text-brand-500 transition">
+                        {setting.email}
+                      </a>
+                    ) : "-"}
+                  </p>
                 </div>
               </div>
 
@@ -422,7 +499,23 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Telepon</h3>
-                  <p className="text-gray-600">+62 812 3456 7890</p>
+                  <div className="text-gray-600 space-y-1">
+                    {setting?.no_telp_satu && (
+                      <p>
+                        <a href={`tel:${setting.no_telp_satu}`} className="hover:text-brand-500 transition">
+                          {setting.no_telp_satu}
+                        </a>
+                      </p>
+                    )}
+                    {setting?.no_telp_dua && (
+                      <p>
+                        <a href={`tel:${setting.no_telp_dua}`} className="hover:text-brand-500 transition">
+                          {setting.no_telp_dua}
+                        </a>
+                      </p>
+                    )}
+                    {!setting?.no_telp_satu && !setting?.no_telp_dua && <p>-</p>}
+                  </div>
                 </div>
               </div>
             </div>

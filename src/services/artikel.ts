@@ -44,6 +44,24 @@ export const artikelService = {
     return data as Artikel[];
   },
 
+  // Get latest active articles with limit
+  async getLatest(limit: number = 6) {
+    const { data, error } = await supabase
+      .from("artikel")
+      .select(`
+        *,
+        kategori_artikel (
+          id,
+          nama
+        )
+      `)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data as Artikel[];
+  },
+
   async getCount() {
     const { count, error } = await supabase
       .from("artikel")
@@ -76,6 +94,39 @@ export const artikelService = {
       .single();
     if (error) throw error;
     return data as Artikel;
+  },
+
+  async getBySlug(slug: string) {
+    const { data, error } = await supabase
+      .from("artikel")
+      .select(`
+        *,
+        kategori_artikel (
+          id,
+          nama
+        )
+      `)
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .single();
+    if (error) throw error;
+    return data as Artikel;
+  },
+
+  async getActive() {
+    const { data, error } = await supabase
+      .from("artikel")
+      .select(`
+        *,
+        kategori_artikel (
+          id,
+          nama
+        )
+      `)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data as Artikel[];
   },
 
   async update(id: number, payload: Partial<ArtikelPayload>) {
