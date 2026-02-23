@@ -1,5 +1,66 @@
 @import 'tailwindcss';
 
+/* Quill content rendering - restore HTML tag defaults inside ql-editor */
+.ql-snow .ql-editor p {
+  margin-bottom: 0.75em;
+}
+
+.ql-snow .ql-editor p:last-child {
+  margin-bottom: 0;
+}
+
+.ql-snow .ql-editor br {
+  display: block;
+  content: "";
+  margin-top: 0.25em;
+}
+
+.ql-snow .ql-editor h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.ql-snow .ql-editor h2 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.ql-snow .ql-editor h3 {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.ql-snow .ql-editor ul,
+.ql-snow .ql-editor ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+.ql-snow .ql-editor li {
+  margin-bottom: 0.25em;
+}
+
+.ql-snow .ql-editor blockquote {
+  border-left: 4px solid #465fff;
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: #475467;
+  font-style: italic;
+}
+
+.ql-snow .ql-editor img {
+  max-width: 100%;
+  height: auto;
+  margin: 0.75em 0;
+  border-radius: 0.5rem;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {

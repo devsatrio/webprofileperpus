@@ -107,7 +107,6 @@ export const artikelService = {
         )
       `)
       .eq("slug", slug)
-      .eq("is_active", true)
       .single();
     if (error) throw error;
     return data as Artikel;

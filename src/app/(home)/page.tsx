@@ -7,6 +7,7 @@ import { LandingLayout } from "@/components/landing";
 import { galeriService, Galeri } from "@/services/galeri";
 import { sliderService, Slider } from "@/services/slider";
 import { artikelService, Artikel } from "@/services/artikel";
+import { ourTeamService, OurTeam } from "@/services/ourTeam";
 import { useAppSetting } from "@/context/AppSettingContext";
 
 // Data slider akan diambil dari database
@@ -15,33 +16,7 @@ import { useAppSetting } from "@/context/AppSettingContext";
 
 // Data artikel akan diambil dari database
 
-// Data team
-const teams = [
-  {
-    id: 1,
-    name: "John Doe",
-    role: "CEO & Founder",
-    image: "/images/user/user-01.jpg",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    role: "CTO",
-    image: "/images/user/user-02.jpg",
-  },
-  {
-    id: 3,
-    name: "Mike Johnson",
-    role: "Lead Designer",
-    image: "/images/user/user-03.jpg",
-  },
-  {
-    id: 4,
-    name: "Sarah Williams",
-    role: "Project Manager",
-    image: "/images/user/user-04.jpg",
-  },
-];
+// Data team akan diambil dari database
 
 // Helper function to strip HTML and clean text for excerpt
 const stripHtmlAndClean = (html: string, maxLength: number = 120): string => {
@@ -94,6 +69,8 @@ export default function HomePage() {
   const [loadingGallery, setLoadingGallery] = useState(true);
   const [articles, setArticles] = useState<Artikel[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
+  const [teams, setTeams] = useState<OurTeam[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(true);
   
   // Get app setting from context
   const { setting } = useAppSetting();
@@ -143,6 +120,21 @@ export default function HomePage() {
       }
     };
     fetchArticles();
+  }, []);
+
+  // Fetch team data from Supabase
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const data = await ourTeamService.getAll();
+        setTeams(data);
+      } catch (err) {
+        console.error("Error fetching teams:", err);
+      } finally {
+        setLoadingTeams(false);
+      }
+    };
+    fetchTeams();
   }, []);
 
   // Auto slide
@@ -195,7 +187,7 @@ export default function HomePage() {
                       {slide.link && (
                         <a 
                           href={slide.link} 
-                          className="bg-brand-500 hover:bg-brand-600 text-white px-8 py-3 rounded-lg transition inline-block"
+                          className="bg-brand-500 hover:bg-brand-600 text-white px-8 py-3 rounded-lg transition inline-block" target="_blank"
                         >
                           Selengkapnya
                         </a>
@@ -244,13 +236,66 @@ export default function HomePage() {
         )}
       </section>
 
+      {/* About Section */}
+      <section className="py-10 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Deskripsi */}
+            <div className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition flex gap-4">
+              <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2 text-gray-900">Tentang Kami</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {setting?.deskripsi || "Deskripsi belum ditambahkan"}
+                </p>
+              </div>
+            </div>
+
+            {/* Motto */}
+            <div className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition flex gap-4">
+              <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2 text-gray-900">Motto</h3>
+                <p className="text-brand-600 text-sm font-medium italic leading-relaxed">
+                  "{setting?.motto || "Motto belum ditambahkan"}"
+                </p>
+              </div>
+            </div>
+
+            {/* Visi & Misi */}
+            <div className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition flex gap-4">
+              <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2 text-gray-900">Visi & Misi</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {setting?.visi_misi || "Visi dan misi belum ditambahkan"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Gallery Section */}
       <section id="gallery" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Galeri Kami</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Lihat koleksi karya dan proyek terbaik kami
+              Temukan konten visual yang menarik dan inspiratif
             </p>
           </div>
 
@@ -340,7 +385,7 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Artikel Terbaru</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Baca insight dan tips terbaru dari tim kami
+              Baca artikel menarik dan informatif terbaru
             </p>
           </div>
 
@@ -416,34 +461,42 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teams.map((member) => (
-              <div key={member.id} className="text-center group">
-                <div className="relative w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+          {loadingTeams ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-brand-500"></div>
+            </div>
+          ) : teams.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Belum ada data tim</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {teams.map((member) => (
+                <div key={member.id} className="text-center group">
+                  <div className="relative w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
+                    {member.image ? (
+                      <Image
+                        src={member.image}
+                        alt={member.nama || "Anggota Tim"}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-lg">{member.nama}</h3>
+                  {member.deskripsi && (
+                    <p className="text-gray-500 text-sm">{member.deskripsi}</p>
+                  )}
                 </div>
-                <h3 className="font-semibold text-lg">{member.name}</h3>
-                <p className="text-gray-500 text-sm">{member.role}</p>
-                <div className="flex justify-center space-x-3 mt-3">
-                  <a href="#" className="text-gray-400 hover:text-brand-500 transition">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                    </svg>
-                  </a>
-                  <a href="#" className="text-gray-400 hover:text-brand-500 transition">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -453,11 +506,11 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Hubungi Kami</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Punya pertanyaan atau ingin bekerja sama? Jangan ragu untuk menghubungi kami
+              Kami siap membantu Anda. Silakan hubungi kami untuk informasi lebih lanjut
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Contact Info */}
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
@@ -520,37 +573,18 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Contact Form */}
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  placeholder="Nama"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition"
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition"
-                />
-              </div>
-              <input
-                type="text"
-                placeholder="Subjek"
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition"
+            {/* Google Maps */}
+            <div className="rounded-xl overflow-hidden shadow-md h-full min-h-96 lg:col-span-2">
+              <iframe
+                width="100%"
+                height="100%"
+                style={{ border: 0, minHeight: "400px" }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.9916256465156!2d2.3521!3d48.8566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e1f06e2b70f%3A0x40b82c3688c9460!2sParis%2C%20France!5e0!3m2!1sen!2s!4v1629804519837"
               />
-              <textarea
-                rows={5}
-                placeholder="Pesan"
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition resize-none"
-              />
-              <button
-                type="submit"
-                className="w-full bg-brand-500 hover:bg-brand-600 text-white py-3 rounded-lg transition font-medium"
-              >
-                Kirim Pesan
-              </button>
-            </form>
+            </div>
           </div>
         </div>
       </section>

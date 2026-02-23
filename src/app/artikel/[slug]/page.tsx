@@ -6,67 +6,47 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { LandingLayout } from "@/components/landing";
 import { artikelService, Artikel } from "@/services/artikel";
+import "react-quill-new/dist/quill.snow.css";
 
-// Helper function to strip HTML and clean text for excerpt
-const stripHtmlAndClean = (html: string, maxLength: number = 100): string => {
+// Helper: strip HTML tags and decode entities for excerpt
+const stripHtml = (html: string, maxLength: number = 100): string => {
   if (!html) return "";
-  
-  // Remove HTML tags
-  let text = html.replace(/<[^>]*>/g, " ");
-  
-  // Decode common HTML entities
-  text = text
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&apos;/gi, "'")
-    .replace(/&mdash;/gi, "—")
-    .replace(/&ndash;/gi, "–")
-    .replace(/&hellip;/gi, "...")
-    .replace(/&rsquo;/gi, "'")
-    .replace(/&lsquo;/gi, "'")
-    .replace(/&rdquo;/gi, '"')
-    .replace(/&ldquo;/gi, '"')
-    .replace(/&#\d+;/g, ""); // Remove remaining numeric entities
-  
-  // Clean up whitespace
-  text = text.replace(/\s+/g, " ").trim();
-  
-  // Truncate to maxLength
-  if (text.length > maxLength) {
-    text = text.substring(0, maxLength).trim();
-    // Don't cut in the middle of a word
-    const lastSpace = text.lastIndexOf(" ");
-    if (lastSpace > maxLength - 30) {
-      text = text.substring(0, lastSpace);
-    }
-    text += "...";
+  // Use DOMParser to properly strip HTML and decode entities
+  if (typeof window !== "undefined") {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const text = (doc.body.textContent || "").replace(/\s+/g, " ").trim();
+    if (text.length <= maxLength) return text;
+    const truncated = text.substring(0, maxLength);
+    const lastSpace = truncated.lastIndexOf(" ");
+    return (lastSpace > 0 ? truncated.substring(0, lastSpace) : truncated) + "...";
   }
-  
-  return text;
+  // Fallback for SSR
+  const text = html.replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&[a-z]+;/gi, "").replace(/\s+/g, " ").trim();
+  if (text.length <= maxLength) return text;
+  const truncated = text.substring(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(" ");
+  return (lastSpace > 0 ? truncated.substring(0, lastSpace) : truncated) + "...";
 };
 
 export default function ArtikelDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const decodedSlug = decodeURIComponent(slug);
 
   const [article, setArticle] = useState<Artikel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   const [relatedArticles, setRelatedArticles] = useState<Artikel[]>([]);
 
   useEffect(() => {
     const fetchArticle = async () => {
       try {
         setLoading(true);
-        const data = await artikelService.getBySlug(slug);
+        const data = await artikelService.getBySlug(decodedSlug);
         setArticle(data);
 
         // Fetch related articles (same category or latest)
-        const allArticles = await artikelService.getLatest(4);
+        const allArticles = await artikelService.getActive();
         const related = allArticles.filter(
           (a) => a.id !== data.id && a.id_kategori === data.id_kategori
         );
@@ -80,7 +60,7 @@ export default function ArtikelDetailPage() {
         setRelatedArticles(related.slice(0, 3));
       } catch (err) {
         console.error("Error fetching article:", err);
-        setError("Artikel tidak ditemukan");
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -141,16 +121,18 @@ export default function ArtikelDetailPage() {
     <LandingLayout>
       {/* Hero Section with Image */}
       <section className="pt-20">
-        <div className="relative h-[50vh] min-h-[400px] bg-gray-900">
+        <div className="relative bg-gray-900">
           {article.image && (
             <Image
               src={article.image}
               alt={article.judul}
-              fill
-              className="object-cover opacity-50"
+              width={1920}
+              height={1080}
+              className="w-full h-auto opacity-50"
               priority
             />
           )}
+          {!article.image && <div className="h-[40vh]" />}
           <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent" />
           <div className="absolute inset-0 flex items-end">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 w-full">
@@ -232,30 +214,21 @@ export default function ArtikelDetailPage() {
       {/* Article Content */}
       <section className="py-12 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Article Body - Render HTML */}
-          <article
-            className="prose prose-lg max-w-none
-              prose-headings:font-bold prose-headings:text-gray-900
-              prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
-              prose-p:text-gray-700 prose-p:leading-relaxed
-              prose-a:text-brand-500 prose-a:no-underline hover:prose-a:underline
-              prose-strong:text-gray-900
-              prose-ul:list-disc prose-ol:list-decimal
-              prose-li:text-gray-700
-              prose-img:rounded-lg prose-img:shadow-md
-              prose-blockquote:border-l-4 prose-blockquote:border-brand-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-600
-              prose-pre:bg-gray-900 prose-pre:text-gray-100
-              prose-code:text-brand-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded
-              prose-table:border-collapse prose-th:bg-gray-100 prose-th:p-3 prose-td:p-3 prose-td:border prose-th:border"
-            dangerouslySetInnerHTML={{ __html: article.isi || "" }}
-          />
+          {/* Article Body - Render HTML (Quill output) */}
+          <div className="ql-snow">
+            <article
+              className="ql-editor"
+              style={{ padding: 0, overflow: "visible" }}
+              dangerouslySetInnerHTML={{ __html: article.isi || "" }}
+            />
+          </div>
 
           {/* Share Section */}
           <div className="mt-12 pt-8 border-t border-gray-200">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex justify-between items-center">
               <div>
-                <p className="text-gray-600 font-medium mb-2">Bagikan artikel ini:</p>
-                <div className="flex space-x-3">
+                <p className="text-gray-600 font-medium mb-3">Bagikan artikel:</p>
+                <div className="flex gap-3">
                   <a
                     href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
                       typeof window !== "undefined" ? window.location.href : ""
@@ -266,20 +239,6 @@ export default function ArtikelDetailPage() {
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" />
-                    </svg>
-                  </a>
-                  <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                      article.judul
-                    )}&url=${encodeURIComponent(
-                      typeof window !== "undefined" ? window.location.href : ""
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-sky-500 text-white rounded-full flex items-center justify-center hover:bg-sky-600 transition"
-                  >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z" />
                     </svg>
                   </a>
                   <a
@@ -298,22 +257,9 @@ export default function ArtikelDetailPage() {
               </div>
               <Link
                 href="/artikel"
-                className="flex items-center text-brand-500 font-medium hover:text-brand-600 transition"
+                className="text-brand-500 font-medium hover:text-brand-600 transition"
               >
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  />
-                </svg>
-                Kembali ke Daftar Artikel
+                ← Kembali
               </Link>
             </div>
           </div>
@@ -364,7 +310,7 @@ export default function ArtikelDetailPage() {
                       {relatedArticle.judul}
                     </h3>
                     <p className="text-gray-600 text-sm line-clamp-2">
-                      {stripHtmlAndClean(relatedArticle.isi || "", 100)}
+                      {stripHtml(relatedArticle.isi || "", 100)}
                     </p>
                   </div>
                 </Link>
