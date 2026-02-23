@@ -62,6 +62,12 @@ export default function VisitorChart() {
             toolbar: {
                 show: false,
             },
+            zoom: {
+                enabled: false,
+            },
+            selection: {
+                enabled: false,
+            },
         },
         stroke: {
             curve: "smooth",
@@ -184,15 +190,14 @@ export default function VisitorChart() {
                     </div>
                 </div>
 
-                <div className="max-w-full overflow-x-auto custom-scrollbar">
-                    <div className="min-w-[500px]">
-                        <ReactApexChart
-                            options={options}
-                            series={series}
-                            type="area"
-                            height={310}
-                        />
-                    </div>
+                <div>
+                    <ReactApexChart
+                        options={options}
+                        series={series}
+                        type="area"
+                        height={310}
+                        width="100%"
+                    />
                 </div>
             </div>
             {/* Stats Cards */}

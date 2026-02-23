@@ -5,13 +5,16 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import { useAppSetting } from "@/context/AppSettingContext";
 import {
-  BoxCubeIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   ListIcon,
-  TableIcon,
   UserCircleIcon,
+  DocsIcon,
+  VideoIcon,
+  PageIcon,
+  GroupIcon,
+  PlugInIcon
 } from "../icons/index";
 
 type NavItem = {
@@ -28,41 +31,41 @@ const navItems: NavItem[] = [
     path: "/admin",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <ListIcon />,
     name: "Kategori Artikel",
     path: "/admin/kategori-artikel",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <ListIcon />,
     name: "Kategori Galeri",
     path: "/admin/kategori-galeri",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <DocsIcon />,
     name: "Artikel",
     path: "/admin/artikel",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <VideoIcon />,
     name: "Galeri",
     path: "/admin/galeri",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <PageIcon />,
     name: "Slider",
     path: "/admin/slider",
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <GroupIcon />,
     name: "Tim Kami",
     path: "/admin/tim-kami",
   },
   {
-    icon: <BoxCubeIcon />, name: "Visitor",
+    icon: <UserCircleIcon />, name: "Visitor",
     path: "/admin/visitor",
   },
   {
-    icon: <BoxCubeIcon />, name: "Web Settings",
+    icon: <PlugInIcon />, name: "Web Settings",
     path: "/admin/web-setting",
   },
 ];
