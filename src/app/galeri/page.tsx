@@ -20,11 +20,15 @@ export default function GaleriPage() {
     const fetchData = async () => {
       try {
         const data = await galeriService.getAll();
-        setGalleries(data);
+
+        // Only show active photos with active categories
+        const activeGalleries = data.filter(
+          (item) => item.is_active && item.kategori_galeri?.is_active
+        );
+        setGalleries(activeGalleries);
 
         // Extract unique active categories
-        const uniqueCategories = data
-          .filter((item) => item.kategori_galeri?.is_active)
+        const uniqueCategories = activeGalleries
           .map((item) => item.kategori_galeri)
           .filter((cat, idx, arr) => arr.findIndex((c) => c?.id === cat?.id) === idx)
           .filter((cat) => cat !== undefined) as { id: number; nama: string }[];

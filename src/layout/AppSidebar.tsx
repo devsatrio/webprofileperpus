@@ -285,7 +285,7 @@ const AppSidebar: React.FC = () => {
         className={`py-8 flex  ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
           }`}
       >
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/admin" className="flex items-center gap-2">
           {isExpanded || isHovered || isMobileOpen ? (
             <span className="text-xl font-bold text-gray-800 dark:text-white">
               {setting?.singkatan_program || setting?.nama_program || "WebProfile"}

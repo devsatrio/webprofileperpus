@@ -67,7 +67,12 @@ export default function ArtikelPage() {
           artikelService.getActive(),
           kategoriArtikelService.getAll(),
         ]);
-        setAllArticles(articlesData);
+
+        // Only show articles where both artikel and kategori are active
+        const activeArticles = articlesData.filter(
+          (article) => article.kategori_artikel?.is_active !== false
+        );
+        setAllArticles(activeArticles);
         setCategories(categoriesData.filter((c) => c.is_active));
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -129,8 +134,7 @@ export default function ArtikelPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Artikel & Blog</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Temukan insight, tips, dan panduan terbaru dari tim kami seputar
-            development, design, dan digital marketing.
+            Temukan berbagai informasi, artikel, dan berita terbaru yang kami sajikan untuk Anda.
           </p>
         </div>
       </section>

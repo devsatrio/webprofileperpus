@@ -14,6 +14,7 @@ export interface Artikel {
   kategori_artikel?: {
     id: number;
     nama: string;
+    is_active?: boolean;
   };
 }
 
@@ -52,7 +53,8 @@ export const artikelService = {
         *,
         kategori_artikel (
           id,
-          nama
+          nama,
+          is_active
         )
       `)
       .eq("is_active", true)
@@ -119,7 +121,8 @@ export const artikelService = {
         *,
         kategori_artikel (
           id,
-          nama
+          nama,
+          is_active
         )
       `)
       .eq("is_active", true)

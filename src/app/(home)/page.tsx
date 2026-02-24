@@ -94,9 +94,12 @@ export default function HomePage() {
   useEffect(() => {
     const fetchGalleries = async () => {
       try {
-        // Ambil 6 galeri terbaru yang aktif
-        const data = await galeriService.getLatest(6);
-        setGalleries(data);
+        // Ambil galeri terbaru yang aktif (artikel & kategori)
+        const data = await galeriService.getLatest(12);
+        const activeGalleries = data.filter(
+          (item) => item.kategori_galeri?.is_active !== false
+        ).slice(0, 6);
+        setGalleries(activeGalleries);
       } catch (err) {
         console.error("Error fetching galleries:", err);
       } finally {
@@ -110,9 +113,12 @@ export default function HomePage() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        // Ambil 6 artikel terbaru yang aktif
-        const data = await artikelService.getLatest(6);
-        setArticles(data);
+        // Ambil artikel terbaru yang aktif (artikel & kategori)
+        const data = await artikelService.getLatest(12);
+        const activeArticles = data.filter(
+          (article) => article.kategori_artikel?.is_active !== false
+        ).slice(0, 6);
+        setArticles(activeArticles);
       } catch (err) {
         console.error("Error fetching articles:", err);
       } finally {
