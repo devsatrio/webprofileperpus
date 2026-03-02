@@ -21,10 +21,10 @@ import { useAppSetting } from "@/context/AppSettingContext";
 // Helper function to strip HTML and clean text for excerpt
 const stripHtmlAndClean = (html: string, maxLength: number = 120): string => {
   if (!html) return "";
-  
+
   // Remove HTML tags
   let text = html.replace(/<[^>]*>/g, " ");
-  
+
   // Decode common HTML entities
   text = text
     .replace(/&nbsp;/gi, " ")
@@ -42,10 +42,10 @@ const stripHtmlAndClean = (html: string, maxLength: number = 120): string => {
     .replace(/&rdquo;/gi, '"')
     .replace(/&ldquo;/gi, '"')
     .replace(/&#\d+;/g, ""); // Remove remaining numeric entities
-  
+
   // Clean up whitespace
   text = text.replace(/\s+/g, " ").trim();
-  
+
   // Truncate to maxLength
   if (text.length > maxLength) {
     text = text.substring(0, maxLength).trim();
@@ -56,7 +56,7 @@ const stripHtmlAndClean = (html: string, maxLength: number = 120): string => {
     }
     text += "...";
   }
-  
+
   return text;
 };
 
@@ -71,7 +71,7 @@ export default function HomePage() {
   const [loadingArticles, setLoadingArticles] = useState(true);
   const [teams, setTeams] = useState<OurTeam[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(true);
-  
+
   // Get app setting from context
   const { setting } = useAppSetting();
 
@@ -113,8 +113,8 @@ export default function HomePage() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        // Ambil artikel terbaru yang aktif (artikel & kategori)
-        const data = await artikelService.getLatest(12);
+        // Ambil artikel aktif urut terbaru, lalu filter kategori aktif
+        const data = await artikelService.getActive();
         const activeArticles = data.filter(
           (article) => article.kategori_artikel?.is_active !== false
         ).slice(0, 6);
@@ -172,9 +172,8 @@ export default function HomePage() {
             {slides.map((slide, index) => (
               <div
                 key={slide.id}
-                className={`absolute inset-0 transition-opacity duration-700 ${
-                  index === currentSlide ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute inset-0 transition-opacity duration-700 ${index === currentSlide ? "opacity-100" : "opacity-0"
+                  }`}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent z-10" />
                 <Image
@@ -191,8 +190,8 @@ export default function HomePage() {
                       <h1 className="text-4xl md:text-6xl font-bold mb-4">{slide.heading}</h1>
                       <p className="text-lg text-gray-200 mb-8">{slide.deskripsi}</p>
                       {slide.link && (
-                        <a 
-                          href={slide.link} 
+                        <a
+                          href={slide.link}
                           className="bg-brand-500 hover:bg-brand-600 text-white px-8 py-3 rounded-lg transition inline-block" target="_blank"
                         >
                           Selengkapnya
@@ -230,9 +229,8 @@ export default function HomePage() {
                     <button
                       key={index}
                       onClick={() => setCurrentSlide(index)}
-                      className={`w-3 h-3 rounded-full transition ${
-                        index === currentSlide ? "bg-brand-500" : "bg-white/50"
-                      }`}
+                      className={`w-3 h-3 rounded-full transition ${index === currentSlide ? "bg-brand-500" : "bg-white/50"
+                        }`}
                     />
                   ))}
                 </div>
@@ -328,10 +326,10 @@ export default function HomePage() {
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-                    <svg 
-                      className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" 
-                      fill="none" 
-                      stroke="currentColor" 
+                    <svg
+                      className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      fill="none"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
@@ -353,11 +351,11 @@ export default function HomePage() {
 
       {/* Image Modal/Popup */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4"
           onClick={() => setSelectedImage(null)}
         >
-          <div 
+          <div
             className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
@@ -428,10 +426,10 @@ export default function HomePage() {
                     <p className="text-sm text-brand-500 mb-2">
                       {article.created_at
                         ? new Date(article.created_at).toLocaleDateString("id-ID", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
                         : "-"}
                     </p>
                     <h3 className="text-lg font-semibold mb-2 group-hover:text-brand-500 transition line-clamp-2">
@@ -581,15 +579,13 @@ export default function HomePage() {
 
             {/* Google Maps */}
             <div className="rounded-xl overflow-hidden shadow-md h-full min-h-96 lg:col-span-2">
-              <iframe
+              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d509.91361814735393!2d112.08842694067431!3d-7.812385410782199!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7859a3e9d21417%3A0x2ccaacdfd28970e0!2sBALAI%20DESA%20GURAH!5e0!3m2!1sen!2sid!4v1772415670161!5m2!1sen!2sid"
                 width="100%"
                 height="100%"
                 style={{ border: 0, minHeight: "400px" }}
                 loading="lazy"
                 allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.9916256465156!2d2.3521!3d48.8566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e1f06e2b70f%3A0x40b82c3688c9460!2sParis%2C%20France!5e0!3m2!1sen!2s!4v1629804519837"
-              />
+                referrerPolicy="no-referrer-when-downgrade"></iframe>
             </div>
           </div>
         </div>
